@@ -68,14 +68,17 @@ auto ExtendibleHashTable<K, V>::GetNumBucketsInternal() const -> int {
   return num_buckets_;
 }
 
+// ==================== Added implementation: Find / Remove ====================
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Find(const K &key, V &value) -> bool {
-  UNREACHABLE("not implemented");
+  std::scoped_lock<std::mutex> lock(latch_);
+  return dir_[IndexOf(key)]->Find(key, value);
 }
 
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Remove(const K &key) -> bool {
-  UNREACHABLE("not implemented");
+  std::scoped_lock<std::mutex> lock(latch_);
+  return dir_[IndexOf(key)]->Remove(key);
 }
 
 template <typename K, typename V>
