@@ -162,6 +162,12 @@ class BufferPoolManagerInstance : public BufferPoolManager {
   /** This latch protects shared data structures. We recommend updating this comment to describe what it protects. */
   std::mutex latch_;
 
+  /** @brief Acquire a frame from the free list or the replacer. Caller must hold latch_. */
+  auto AcquireFrame(frame_id_t *frame_id) -> bool;
+
+  /** @brief Reset a frame's data and metadata. Caller must hold latch_. */
+  void ResetFrame(Page *page);
+
   /**
    * @brief Allocate a page on disk. Caller should acquire the latch before calling this function.
    * @return the id of the allocated page
