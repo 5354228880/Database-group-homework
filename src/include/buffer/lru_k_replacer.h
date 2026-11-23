@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <deque>
 #include <limits>
 #include <list>
 #include <mutex>  // NOLINT
@@ -22,6 +23,20 @@
 #include "common/macros.h"
 
 namespace bustub {
+
+/**
+ * LRUKNode 记录一个 frame 的 LRU-K 元信息。
+ *
+ * history_      最近 k 次访问的时间戳，队尾最新，最多保留 k 个
+ * is_evictable_ 是否可被淘汰（对应 pin_count == 0），新建时默认 false
+ */
+class LRUKNode {
+ private:
+  std::deque<size_t> history_;
+  bool is_evictable_{false};
+
+  friend class LRUKReplacer;
+};
 
 /**
  * LRUKReplacer implements the LRU-k replacement policy.
@@ -37,7 +52,6 @@ namespace bustub {
 class LRUKReplacer {
  public:
   /**
-   *
    * TODO(P1): Add implementation
    *
    * @brief a new LRUKReplacer.
@@ -133,12 +147,22 @@ class LRUKReplacer {
   auto Size() -> size_t;
 
  private:
-  // TODO(student): implement me! You can replace these member variables as you like.
-  // Remove maybe_unused if you start using them.
-  [[maybe_unused]] size_t current_timestamp_{0};
-  [[maybe_unused]] size_t curr_size_{0};
-  [[maybe_unused]] size_t replacer_size_;
-  [[maybe_unused]] size_t k_;
+  /** frame_id -> 该帧的访问历史与可淘汰标记 */
+  std::unordered_map<frame_id_t, LRUKNode> node_store_;
+
+  /** 全局单调递增的时间戳，只在 RecordAccess 里 +1 */
+  size_t current_timestamp_{0};
+
+  /** 当前 evictable 的帧数量，Size() 返回它 */
+  size_t curr_size_{0};
+
+  /** 最多能管理的 frame 数，用于越界检查 */
+  size_t replacer_size_;
+
+  /** K 值 */
+  size_t k_;
+
+  /** 保护以上全部成员 */
   std::mutex latch_;
 };
 
